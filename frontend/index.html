@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add employee — Early Turnover Prediction</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <h1 class="site-title">Add employee</h1>
+        <nav class="nav" aria-label="Main">
+          <a href="/" aria-current="page">Add Employee</a>
+          <a href="/dashboard">Dashboard</a>
+          <a href="/employee">Employee Details</a>
+          <a href="/docs" target="_blank" rel="noopener">API docs</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div data-alert></div>
+
+      <nav class="subnav muted" aria-label="Pages">
+        <a href="/">Add Employee</a>
+        <span class="subnav__sep" aria-hidden="true">·</span>
+        <a href="/dashboard">Dashboard</a>
+        <span class="subnav__sep" aria-hidden="true">·</span>
+        <a href="/employee">Employee Details</a>
+      </nav>
+
+      <p class="lead" style="margin-top: 0">
+        Enter employee details. The record is saved, then risk is predicted automatically.
+        Initial placeholders for risk are sent to the API and overwritten by the model.
+      </p>
+
+      <section class="card">
+        <h2>Employee details</h2>
+        <form id="add-employee-form" class="form-grid">
+          <div class="form-field form-field--full">
+            <label for="full_name">Full name</label>
+            <input id="full_name" name="full_name" required autocomplete="name" />
+          </div>
+          <div class="form-field">
+            <label for="age">Age</label>
+            <input id="age" name="age" type="number" min="16" max="100" required />
+          </div>
+          <div class="form-field">
+            <label for="department">Department</label>
+            <input id="department" name="department" required />
+          </div>
+          <div class="form-field form-field--full">
+            <label for="job_role">Job role</label>
+            <input id="job_role" name="job_role" required />
+          </div>
+          <div class="form-field">
+            <label for="monthly_income">Monthly income</label>
+            <input
+              id="monthly_income"
+              name="monthly_income"
+              type="number"
+              step="0.01"
+              min="0"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="distance_from_home">Distance from home</label>
+            <input
+              id="distance_from_home"
+              name="distance_from_home"
+              type="number"
+              step="0.1"
+              min="0"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="years_at_company">Years at company</label>
+            <input
+              id="years_at_company"
+              name="years_at_company"
+              type="number"
+              step="0.1"
+              min="0"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="job_satisfaction">Job satisfaction (1–5)</label>
+            <input
+              id="job_satisfaction"
+              name="job_satisfaction"
+              type="number"
+              min="1"
+              max="5"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="environment_satisfaction">Environment satisfaction (1–5)</label>
+            <input
+              id="environment_satisfaction"
+              name="environment_satisfaction"
+              type="number"
+              min="1"
+              max="5"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="work_life_balance">Work–life balance (1–5)</label>
+            <input
+              id="work_life_balance"
+              name="work_life_balance"
+              type="number"
+              min="1"
+              max="5"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="training_times_last_year">Training times (last year)</label>
+            <input
+              id="training_times_last_year"
+              name="training_times_last_year"
+              type="number"
+              min="0"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="attendance_score">Attendance score (0–100)</label>
+            <input
+              id="attendance_score"
+              name="attendance_score"
+              type="number"
+              step="0.1"
+              min="0"
+              max="100"
+              required
+            />
+          </div>
+          <div class="form-field">
+            <label for="task_completion_rate">Task completion rate (0–1)</label>
+            <input
+              id="task_completion_rate"
+              name="task_completion_rate"
+              type="number"
+              step="0.01"
+              min="0"
+              max="1"
+              required
+            />
+          </div>
+          <div class="form-field form-field--full">
+            <label for="onboarding_feedback">Onboarding feedback</label>
+            <textarea id="onboarding_feedback" name="onboarding_feedback" rows="3"></textarea>
+          </div>
+          <div class="form-field form-field--full">
+            <button type="submit" class="btn" id="btn-submit">Save and predict risk</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card risk-result" id="risk-result" hidden>
+        <h2>Risk assessment</h2>
+        <p class="muted" style="margin-top: 0">
+          Employee ID <strong id="out-employee-id"></strong> — updated after prediction.
+        </p>
+        <dl class="risk-dl">
+          <dt>Risk score</dt>
+          <dd id="out-risk-score"></dd>
+          <dt>Risk level</dt>
+          <dd><span id="out-risk-level" class="badge"></span></dd>
+        </dl>
+      </section>
+
+      <p class="muted" id="health-line" style="margin-bottom: 0">Checking API…</p>
+
+      <p class="footer-note">
+        Flow: <code>POST /employees</code> → <code>POST /employees/{id}/predict-risk</code>.
+      </p>
+    </main>
+
+    <script src="/static/app.js"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        var form = document.getElementById("add-employee-form");
+        var btn = document.getElementById("btn-submit");
+        var riskSection = document.getElementById("risk-result");
+        var outId = document.getElementById("out-employee-id");
+        var outScore = document.getElementById("out-risk-score");
+        var outLevel = document.getElementById("out-risk-level");
+
+        function num(id) {
+          var el = document.getElementById(id);
+          return el ? Number(el.value) : NaN;
+        }
+
+        function str(id) {
+          var el = document.getElementById(id);
+          return el ? el.value.trim() : "";
+        }
+
+        function buildPayload() {
+          return {
+            full_name: str("full_name"),
+            age: Math.round(num("age")),
+            department: str("department"),
+            job_role: str("job_role"),
+            monthly_income: num("monthly_income"),
+            distance_from_home: num("distance_from_home"),
+            years_at_company: num("years_at_company"),
+            job_satisfaction: Math.round(num("job_satisfaction")),
+            environment_satisfaction: Math.round(num("environment_satisfaction")),
+            work_life_balance: Math.round(num("work_life_balance")),
+            training_times_last_year: Math.round(num("training_times_last_year")),
+            attendance_score: num("attendance_score"),
+            task_completion_rate: num("task_completion_rate"),
+            onboarding_feedback: str("onboarding_feedback") || "",
+            risk_score: 0,
+            risk_level: "Low",
+          };
+        }
+
+        function postPredictRisk(employeeId) {
+          return App.postEmpty("/employees/" + employeeId + "/predict-risk");
+        }
+
+        function showRiskOutcome(emp) {
+          outId.textContent = String(emp.id);
+          outScore.textContent =
+            typeof emp.risk_score === "number"
+              ? emp.risk_score.toFixed(4)
+              : String(emp.risk_score);
+          outLevel.textContent = emp.risk_level || "—";
+          outLevel.className = App.riskBadgeClass(emp.risk_level) || "badge";
+          riskSection.hidden = false;
+          riskSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        App.getJson("/health")
+          .then(function (d) {
+            document.getElementById("health-line").textContent =
+              "API: " + (d.message || d.status || "connected");
+          })
+          .catch(function (e) {
+            document.getElementById("health-line").textContent =
+              "API: unreachable — " + e.message;
+          });
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          App.clearAlerts();
+          riskSection.hidden = true;
+          btn.disabled = true;
+
+          var payload = buildPayload();
+
+          App.postJson("/employees", payload)
+            .then(function (created) {
+              return postPredictRisk(created.id).then(function (updated) {
+                return updated;
+              });
+            })
+            .then(function (updated) {
+              App.showAlert(
+                "success",
+                "Employee saved and risk updated (ID " + updated.id + ")."
+              );
+              showRiskOutcome(updated);
+            })
+            .catch(function (err) {
+              App.showAlert("error", err.message || String(err));
+            })
+            .finally(function () {
+              btn.disabled = false;
+            });
+        });
+      })();
+    </script>
+  </body>
+</html>

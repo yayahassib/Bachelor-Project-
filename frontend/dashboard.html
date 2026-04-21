@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — Early Turnover Prediction</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <h1 class="site-title">Dashboard</h1>
+        <nav class="nav" aria-label="Main">
+          <a href="/">Add Employee</a>
+          <a href="/dashboard" aria-current="page">Dashboard</a>
+          <a href="/employee">Employee Details</a>
+          <a href="/docs" target="_blank" rel="noopener">API docs</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div data-alert></div>
+
+      <nav class="subnav muted" aria-label="Pages">
+        <a href="/">Add Employee</a>
+        <span class="subnav__sep" aria-hidden="true">·</span>
+        <a href="/dashboard">Dashboard</a>
+        <span class="subnav__sep" aria-hidden="true">·</span>
+        <a href="/employee">Employee Details</a>
+      </nav>
+
+      <section class="card">
+        <h2>API status</h2>
+        <p id="api-status" class="muted">Loading…</p>
+      </section>
+
+      <section class="card">
+        <h2>Employees</h2>
+        <p class="muted">
+          Data from <code>GET /employees</code> with optional query filters. Use
+          <strong>Apply filters</strong> after changing risk or department.
+        </p>
+
+        <div class="filter-bar">
+          <div class="form-field" style="margin-bottom: 0; min-width: 10rem">
+            <label for="filter-risk">Risk level</label>
+            <select id="filter-risk" name="filter-risk">
+              <option value="">All levels</option>
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          <div class="form-field" style="margin-bottom: 0; flex: 1; min-width: 12rem">
+            <label for="filter-department">Department</label>
+            <input
+              id="filter-department"
+              type="text"
+              name="filter-department"
+              placeholder="e.g. Sales"
+              autocomplete="organization"
+            />
+          </div>
+          <div class="form-field filter-bar__checkbox" style="margin-bottom: 0">
+            <label for="sort-risk">Sort by risk</label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="sort-risk" />
+              Highest first
+            </label>
+          </div>
+          <div class="filter-bar__actions">
+            <button type="button" class="btn" id="btn-apply">Apply filters</button>
+            <button type="button" class="btn btn--secondary" id="btn-refresh">
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <div id="employees-empty" class="muted" hidden>No employees found.</div>
+        <div class="table-wrap">
+          <table id="employees-table" hidden>
+            <thead>
+              <tr>
+                <th>Full name</th>
+                <th>Department</th>
+                <th>Risk score</th>
+                <th>Risk level</th>
+                <th scope="col">Details</th>
+              </tr>
+            </thead>
+            <tbody id="employees-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/dashboard.js"></script>
+  </body>
+</html>

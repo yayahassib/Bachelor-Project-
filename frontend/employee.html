@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee — Early Turnover Prediction</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <h1 class="site-title">Employee profile</h1>
+        <nav class="nav" aria-label="Main">
+          <a href="/">Add Employee</a>
+          <a href="/dashboard">Dashboard</a>
+          <a href="/employee" id="nav-employee-details" aria-current="page"
+            >Employee Details</a
+          >
+          <a href="/docs" target="_blank" rel="noopener">API docs</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div data-alert></div>
+
+      <nav class="subnav muted" aria-label="Pages" style="margin-top: 0">
+        <a href="/">Add Employee</a>
+        <span class="subnav__sep" aria-hidden="true">·</span>
+        <a href="/dashboard">Dashboard</a>
+        <span class="subnav__sep" aria-hidden="true">·</span>
+        <a href="/employee" id="subnav-employee-details">Employee Details</a>
+        <span class="subnav__sep" aria-hidden="true">·</span>
+        <a href="/dashboard">← Employee list</a>
+      </nav>
+
+      <section class="card" id="panel-missing-id" hidden>
+        <h2>Employee ID required</h2>
+        <p class="muted">
+          Add <code>?id=</code> to the URL with a numeric employee ID, for example
+          <code>/employee?id=1</code>. Open an employee from the dashboard table.
+        </p>
+      </section>
+
+      <div id="panel-main" hidden>
+        <section class="card">
+          <h2 id="employee-heading">Employee</h2>
+          <div class="risk-summary" id="risk-summary">
+            <div class="risk-summary__item">
+              <span class="risk-summary__label">Risk score</span>
+              <span class="risk-summary__value" id="risk-score-display">—</span>
+            </div>
+            <div class="risk-summary__item">
+              <span class="risk-summary__label">Risk level</span>
+              <span id="risk-level-display" class="badge">—</span>
+            </div>
+          </div>
+          <dl class="detail-dl detail-dl--spaced" id="employee-fields"></dl>
+        </section>
+
+        <section class="card">
+          <h2>Interventions</h2>
+          <p class="muted" style="margin-top: 0">
+            From <code>GET /interventions/{employee_id}</code> (newest first).
+          </p>
+          <p class="muted" id="interventions-empty" hidden>No interventions recorded yet.</p>
+          <div class="table-wrap">
+            <table id="interventions-table" hidden>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Date applied</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody id="interventions-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Add intervention</h2>
+          <p class="muted" style="margin-top: 0">
+            Submits to <code>POST /interventions</code>.
+          </p>
+          <form id="intervention-form" class="form-grid" style="max-width: 32rem">
+            <div class="form-field form-field--full">
+              <label for="intervention_type">Intervention type</label>
+              <select id="intervention_type" name="intervention_type" required>
+                <option value="" disabled selected>Select type…</option>
+                <option value="Assign Mentor">Assign Mentor</option>
+                <option value="Schedule Follow-up Meeting">
+                  Schedule Follow-up Meeting
+                </option>
+                <option value="Extra Training Support">Extra Training Support</option>
+                <option value="HR Check-in">HR Check-in</option>
+              </select>
+            </div>
+            <div class="form-field form-field--full">
+              <label for="intervention_notes">Notes</label>
+              <textarea
+                id="intervention_notes"
+                name="intervention_notes"
+                rows="3"
+                placeholder="Optional details"
+              ></textarea>
+            </div>
+            <div class="form-field">
+              <label for="date_applied">Date applied</label>
+              <input id="date_applied" name="date_applied" type="date" required />
+            </div>
+            <div class="form-field form-field--full">
+              <button type="submit" class="btn" id="btn-add-intervention">
+                Add intervention
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/employee.js"></script>
+  </body>
+</html>
